@@ -1,0 +1,8 @@
+name: blocky-map-generator
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - ipython
+  - seaborn
+prefix: C:\Users\Saket Saurabh\miniconda3\envs\blocky-map-generator
