@@ -3,7 +3,9 @@ from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json, config
 from typing import List, Union
 from direction import DirectionEnum
-from level import LevelMap, Tile, Point
+from level import LevelMap, Tile, Point, showLevelPNGMark
+from mazelib.solve.Chain import Chain
+from mazelib.solve.ShortestPath import ShortestPath
 from random import choice
 from blocks import CodeBlock
 import numpy as np
@@ -48,42 +50,26 @@ class Agent:
     path: List[Tile] = field(default_factory=list,
                              metadata=config(exclude=lambda x: False))
 
-    def _gen_rand_location(self, locations, r_min, r_max, c_min, c_max):
-        end_r, end_c = choice([(r, c) for r, c in zip(locations[0], locations[1]) if (
-            r >= r_min) and (r <= r_max) and (c >= c_min) and (c <= c_max)])
-        return (end_r, end_c)
+    def auto_solver(self, start_location, end_location, solver=Chain()):
+        
+        self.grid.maze.start = (start_location.row, start_location.col)
+        self.grid.maze.end = (end_location.row, end_location.col)
+        self.grid.maze.solver = solver
 
-    def start_walk(self, random_start=False, random_end=False):
-        grid = self.grid.maze.grid
-        r, c = grid.shape
-        locations = np.where(grid == 0)
-        start_r, start_c = self._gen_rand_location(
-            locations, r // 2 - 1, r // 2 + 1, c // 2 - 1, c // 2 + 1)
-        start_tile = Tile(int(start_r), int(start_c))
-        self.grid.start_location = start_tile
+        try:
+            print('start solving maze...')
+            self.grid.maze.solve()
+            print('maze is solved!')
+        except:
+            print("can't solve the maze")
+            showLevelPNGMark(self.grid.maze.grid, self.grid.maze.start, self.grid.maze.end)
+        return self.grid.maze.solutions
+
+
+    def start_walk(self, start_tile, end_tile):
+
+        paths = self.auto_solver(start_tile, end_tile)
         start_tile.direction = self.direction.name
-
-        if self.direction == DirectionEnum.SOUTH:
-            end_r, end_c = self._gen_rand_location(locations, r // 2, r, 0, c)
-        elif self.direction == DirectionEnum.NORTH:
-            end_r, end_c = self._gen_rand_location(locations, 0, r // 2, 0, c)
-        elif self.direction == DirectionEnum.EAST:
-            end_r, end_c = self._gen_rand_location(locations, 0, r, c // 2, c)
-        elif self.direction == DirectionEnum.WEST:
-            end_r, end_c = self._gen_rand_location(locations, 0, r, 0, c // 2)
-        end_tile = Tile(end_r, end_c)
-
-        print('start location', start_tile)
-        print('end location', end_tile)
-
-        if random_start:
-            paths = self.grid.auto_solver(end_location=end_tile)
-        elif random_end:
-            paths = self.grid.auto_solver(start_location=start_tile)
-        elif random_start and random_end:
-            paths = self.grid.auto_solver()
-        else:
-            paths = self.grid.auto_solver(start_tile, end_tile)
 
         for path in paths:
             old_tile = start_tile
@@ -113,5 +99,6 @@ class Agent:
                 tiles.append(new_tile)
             tiles.append(end_tile)
             self.path.append(tiles)
-
-        print('done walking!')
+        
+            print('done walking!')
+            return tiles

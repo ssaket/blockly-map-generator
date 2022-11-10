@@ -5,7 +5,7 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 from dataclasses_json import config, dataclass_json
 from mazelib import Maze
-from mazelib.solve.Chain import Chain
+
 from mazelib.generate.CellularAutomaton import CellularAutomaton
 from mazelib.generate.Ellers import Ellers
 
@@ -42,12 +42,10 @@ class LevelMap:
                              metadata=config(exclude=lambda x: False))
     maze: Maze = field(init=False, repr=False,
                        metadata=config(exclude=lambda x: True))
-    start_location: Union[Point, None] = field(repr=False, default=None)
-    score: int = field(default=0)
 
     def generate_map(self, method='cellular', custom_map=None, seed=121, **kwargs):
 
-        self.maze = Maze(seed)
+        self.maze = Maze()
         assert method in [
             'cellular', 'eller'], 'Only Cellular and Eller methods are supported'
 
@@ -69,50 +67,6 @@ class LevelMap:
 
         return self.grid
 
-    def find_tile(self, point: Point):
-        for i in range(len(self.tiles)):
-            if self.tiles[i].x == point.x and self.tiles[i].y == point.y:
-                return (self.tiles[i], i)
-        return 0
-
-    def _isValid(self, size, level_map, x, y, res):
-        if x >= 0 and y >= 0 and x < size and y < size and level_map[x][y].value == 0 and res[x][y].value == 0:
-            return True
-        return False
-
-    def auto_solver(self, start_location: Union[Tile, None] = None, end_location: Union[Tile, None] = None, solver=Chain()):
-        self.maze.generate_entrances()
-        if start_location is not None:
-            self.maze.start = (start_location.row, start_location.col)
-        if end_location is not None:
-            self.maze.end = (end_location.row, end_location.col)
-        self.maze.solver = solver
-
-        try:
-            print('start solving maze...')
-            showLevelPNGMark(self.maze.grid, self.maze.start, self.maze.end)
-            self.maze.solve()
-            print('maze is solved!')
-        except:
-            print("can't solve the maze")
-            showLevelPNGMark(self.maze.grid, self.maze.start, self.maze.end)
-        return self.maze.solutions
-
-
-def print_maze(size, res):
-    for i in range(size):
-        for j in range(size):
-            print(res[i][j], end=' ')
-        print()
-    print('####################')
-
-
-def print_level(size, res):
-    for i in range(size):
-        for j in range(size):
-            print(res[i][j].value, end=' ')
-        print()
-    print('####################')
 
 
 def showLevelPNG(grid):
@@ -131,7 +85,7 @@ def showLevelWithAgentPNG(grid, agent_paths):
 
     if ncols > 1:
         fig, axes = plt.subplots(
-            nrows, ncols, sharex=False, sharey=False, squeeze=True)
+            nrows, ncols, sharex=False, sharey=False)
         for ax in axes.flatten():
             ax.imshow(grid, cmap=plt.cm.binary, interpolation='nearest')
             colors = ['maroon', 'royalblue', 'darkgray', 'coral', 'steelblue']
@@ -146,6 +100,7 @@ def showLevelWithAgentPNG(grid, agent_paths):
                     patch = patches.Circle((tile.col, tile.row), 0.5, linewidth=3,
                                            edgecolor=color, facecolor=color)
                     ax.add_patch(patch)
+            plt.show()
     else:
         fig, ax = plt.subplots(nrows, ncols, sharex=False,
                                sharey=False, squeeze=True)
@@ -163,8 +118,6 @@ def showLevelWithAgentPNG(grid, agent_paths):
                                        edgecolor=color, facecolor=color)
                 ax.add_patch(patch)
 
-    plt.show()
-
 
 def showLevelPNGMark(grid, start, end):
     """Generate a simple image of the maze with start and end marker."""
@@ -179,15 +132,3 @@ def showLevelPNGMark(grid, start, end):
     ax.add_patch(end_patch)
     # plt.xticks([]), plt.yticks([])
     plt.show()
-
-
-def main():
-    size = 4
-    level = LevelMap(size)
-    grid = level.generate_map()
-    print(grid.tostring(True))
-    showLevelPNG(grid.grid)
-
-
-if __name__ == '__main__':
-    main()
