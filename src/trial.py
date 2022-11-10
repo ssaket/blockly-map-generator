@@ -11,40 +11,39 @@ from level import LevelMap
 @dataclass
 class Trial:
     """
-    Generate trials for the experiment
+    Generate a trial for the experiment
     """
-    trial_num: int
+    id: int = field(default=1)
     map_size: int = field(default=5)
-    num_agent: int = field(default=3)
-    trial_map: LevelMap = field(init=False, repr=False)
+    num_agents: int = field(default=3)
+    grid: LevelMap = field(init=False, repr=False)
     agents: List[Agent] = field(default_factory=list, repr=False)
 
-    def generate_trials(self, num: int):
-        """
-        Generate trials
-        """
+    def __post_init__(self):
         level = LevelMap(self.map_size)
-        level.generate_map()
+        level.generate_map(complexity = 0.1, density = 0.2)
+        self.grid = level
+        for id in range(1, self.num_agents + 1):
+            self.agents.append(Agent(id, self.grid))
 
-        for trial in range(num):
-            for id in range(1, self.num_agent + 1):
-                self.agents.append(Agent(id, level))
-            self.trial_map = level
-            for agent in self.agents:
-                agent.start_walk()
+    def start_agent_walk(self, random_start = False, random_end = True):
+        for agent in self.agents:
+            agent.start_walk(random_start, random_end)
+
 
     def generate_custom_trial(self, custom_map):
         """
         Generate trial based on given numpy maze array
         """
-        level = LevelMap(self.map_size)
+        level = LevelMap(custom_map.shape[0] // 2 - 1)
         level.generate_map(custom_map)
 
-        for id in range(1, self.num_agent + 1):
+        for id in range(1, self.num_agents + 1):
             self.agents.append(Agent(id, level))
-        self.trial_map = level
         for agent in self.agents:
             agent.start_walk()
+
+        self.grid = level
 
 
 def main():

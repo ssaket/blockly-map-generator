@@ -1,8 +1,12 @@
 from trial import Trial
+from level import showLevelWithAgentPNG
 
 def main():
-    trial = Trial(1, 5, 4)
-    trial.generate_trials(num=10)
+    trial = Trial(map_size = 10, num_agents = 3)
+    trial.start_agent_walk(False, False)
+
+
+    showLevelWithAgentPNG(trial.grid.maze.grid, trial.agents[0].path)
     print(trial.to_json())
 
 

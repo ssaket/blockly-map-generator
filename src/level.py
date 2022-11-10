@@ -5,8 +5,9 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 from dataclasses_json import config, dataclass_json
 from mazelib import Maze
-from mazelib.generate.AldousBroder import AldousBroder
-from mazelib.solve.ShortestPaths import ShortestPaths
+from mazelib.solve.Chain import Chain
+from mazelib.generate.CellularAutomaton import CellularAutomaton
+from mazelib.generate.Ellers import Ellers
 
 from blocks import CodeBlock
 
@@ -37,27 +38,36 @@ class Tile(Point):
 @dataclass
 class LevelMap:
     size: int
-    map: List[Tile] = field(default_factory=list, repr=False,
-                            metadata=config(exclude=lambda x: False))
+    grid: List[Tile] = field(default_factory=list, repr=False,
+                             metadata=config(exclude=lambda x: False))
     maze: Maze = field(init=False, repr=False,
                        metadata=config(exclude=lambda x: True))
     start_location: Union[Point, None] = field(repr=False, default=None)
     score: int = field(default=0)
 
-    def generate_map(self, custom_map=None, algorithm=AldousBroder, seed=121):
+    def generate_map(self, method='cellular', custom_map=None, seed=121, **kwargs):
+
         self.maze = Maze(seed)
+        assert method in [
+            'cellular', 'eller'], 'Only Cellular and Eller methods are supported'
+
         if custom_map is not None:
             self.maze.grid = custom_map
         else:
-            self.maze.generator = algorithm(self.size, self.size)
+            if method == 'cellular':
+                self.maze.generator = CellularAutomaton(
+                    self.size, self.size, **kwargs)
+            else:
+                self.maze.generator = Ellers(
+                    self.size, self.size, **kwargs)
             self.maze.generate()
         grid = self.maze.grid
         H, W = grid.shape
 
-        self.map = [Tile(c, r, int(grid[r, c]))
-                    for r in range(H) for c in range(W)]
+        self.grid = [Tile(c, r, int(grid[r, c]))
+                     for r in range(H) for c in range(W)]
 
-        return self.map
+        return self.grid
 
     def find_tile(self, point: Point):
         for i in range(len(self.tiles)):
@@ -70,16 +80,22 @@ class LevelMap:
             return True
         return False
 
-    def auto_solver(self, start_location: Tile, end_location: Tile, solver=ShortestPaths()):
-        self.maze.start = (start_location.row, start_location.col)
-        self.maze.end = (end_location.row, end_location.col)
+    def auto_solver(self, start_location: Union[Tile, None] = None, end_location: Union[Tile, None] = None, solver=Chain()):
+        self.maze.generate_entrances()
+        if start_location is not None:
+            self.maze.start = (start_location.row, start_location.col)
+        if end_location is not None:
+            self.maze.end = (end_location.row, end_location.col)
         self.maze.solver = solver
 
         try:
+            print('start solving maze...')
+            showLevelPNGMark(self.maze.grid, self.maze.start, self.maze.end)
             self.maze.solve()
+            print('maze is solved!')
         except:
             print("can't solve the maze")
-            showPNGMark(self.maze.grid, self.maze.start, self.maze.end)
+            showLevelPNGMark(self.maze.grid, self.maze.start, self.maze.end)
         return self.maze.solutions
 
 
@@ -99,35 +115,78 @@ def print_level(size, res):
     print('####################')
 
 
-def showPNG(grid):
+def showLevelPNG(grid):
     """Generate a simple image of the maze."""
     plt.figure(figsize=(10, 5))
     plt.imshow(grid, cmap=plt.cm.binary, interpolation='nearest')
-    plt.xticks([]), plt.yticks([])
+    # plt.xticks([]), plt.yticks([])
     plt.show()
 
 
-def showPNGMark(grid, start, end):
+def showLevelWithAgentPNG(grid, agent_paths):
     """Generate a simple image of the maze."""
+
+    nrows = 1
+    ncols = len(agent_paths)
+
+    if ncols > 1:
+        fig, axes = plt.subplots(
+            nrows, ncols, sharex=False, sharey=False, squeeze=True)
+        for ax in axes.flatten():
+            ax.imshow(grid, cmap=plt.cm.binary, interpolation='nearest')
+            colors = ['maroon', 'royalblue', 'darkgray', 'coral', 'steelblue']
+
+            for idx, path in enumerate(agent_paths):
+                entrance_colors = ['dimgray', 'darkgray']
+                for i, tile in enumerate(path):
+                    if i == 0 or i == len(path) - 1:
+                        color = entrance_colors.pop()
+                    else:
+                        color = colors[idx]
+                    patch = patches.Circle((tile.col, tile.row), 0.5, linewidth=3,
+                                           edgecolor=color, facecolor=color)
+                    ax.add_patch(patch)
+    else:
+        fig, ax = plt.subplots(nrows, ncols, sharex=False,
+                               sharey=False, squeeze=True)
+        ax.imshow(grid, cmap=plt.cm.binary, interpolation='nearest')
+        colors = ['maroon', 'royalblue', 'darkgray', 'coral', 'steelblue']
+
+        for idx, path in enumerate(agent_paths):
+            entrance_colors = ['dimgray', 'darkgray']
+            for i, tile in enumerate(path):
+                if i == 1 or i == len(path) - 1:
+                    color = entrance_colors.pop()
+                else:
+                    color = colors[idx]
+                patch = patches.Circle((tile.col, tile.row), 0.5, linewidth=3,
+                                       edgecolor=color, facecolor=color)
+                ax.add_patch(patch)
+
+    plt.show()
+
+
+def showLevelPNGMark(grid, start, end):
+    """Generate a simple image of the maze with start and end marker."""
     plt.figure(figsize=(10, 5))
     plt.imshow(grid, cmap=plt.cm.binary, interpolation='nearest')
     ax = plt.gca()
-    start_patch = patches.Circle(start, 0.5, linewidth=3,
+    start_patch = patches.Circle((start[1], start[0]), 0.5, linewidth=3,
                                  edgecolor='r', facecolor='red')
-    end_patch = patches.Circle(end, 0.5, linewidth=3,
+    end_patch = patches.Circle((end[1], end[0]), 0.5, linewidth=3,
                                edgecolor='g', facecolor='green')
     ax.add_patch(start_patch)
     ax.add_patch(end_patch)
-    plt.xticks([]), plt.yticks([])
+    # plt.xticks([]), plt.yticks([])
     plt.show()
 
 
 def main():
     size = 4
     level = LevelMap(size)
-    map = level.generate_map()
-    print(map.tostring(True))
-    showPNG(map.grid)
+    grid = level.generate_map()
+    print(grid.tostring(True))
+    showLevelPNG(grid.grid)
 
 
 if __name__ == '__main__':
