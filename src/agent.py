@@ -1,14 +1,13 @@
-from enum import Enum
 from dataclasses import dataclass, field
-from dataclasses_json import dataclass_json, config
-from typing import List, Union
-from direction import DirectionEnum
-from level import LevelMap, Tile, Point, showLevelPNGMark
+from typing import List
+
+from dataclasses_json import config, dataclass_json
 from mazelib.solve.Chain import Chain
-from mazelib.solve.ShortestPath import ShortestPath
-from random import choice
+
 from blocks import CodeBlock
-import numpy as np
+from direction import DirectionEnum
+from level import LevelMap, Tile, showLevelPNGMark
+import logging
 
 # actions
 TURN_LEFT = [
@@ -29,76 +28,75 @@ TURN_AROUND = [
     [DirectionEnum.SOUTH, DirectionEnum.NORTH],
     [DirectionEnum.EAST, DirectionEnum.WEST],
     [DirectionEnum.NORTH, DirectionEnum.SOUTH],
-    [DirectionEnum.WEST, DirectionEnum.EAST]
+    [DirectionEnum.WEST, DirectionEnum.EAST],
 ]
-
-# direction coords for actions
-class ActionEnum(Enum):
-    MOVE = (0, -1)
-    SOUTH = (0, 1)
-    EAST = (1, 0)
-    WEST = (-1, 0)
 
 
 @dataclass_json
 @dataclass
 class Agent:
+    """A computer agent who can walk on the map using different strategy"""
     id: int
     grid: LevelMap
-    current_location: Union[Point, None] = None
-    direction: DirectionEnum = choice(list(DirectionEnum))
-    path: List[Tile] = field(default_factory=list,
-                             metadata=config(exclude=lambda x: False))
+    curr_direction: DirectionEnum
+    path: List[List[Tile]] = field(
+        default_factory=list,
+        metadata=config(exclude=lambda x: False))  # type: ignore
 
-    def auto_solver(self, start_location, end_location, solver=Chain()):
-        
+    def auto_solver(self, start_location, end_location,
+                    solver=Chain()) -> list[list]:
+
         self.grid.maze.start = (start_location.row, start_location.col)
         self.grid.maze.end = (end_location.row, end_location.col)
-        self.grid.maze.solver = solver
+        self.grid.maze.solver = solver  # type: ignore
 
         try:
-            print('start solving maze...')
+            logging.info('start solving maze...')
             self.grid.maze.solve()
-            print('maze is solved!')
+            logging.info('maze is solved!')
         except:
             print("can't solve the maze")
-            showLevelPNGMark(self.grid.maze.grid, self.grid.maze.start, self.grid.maze.end)
-        return self.grid.maze.solutions
-
+            showLevelPNGMark(self.grid.maze.grid, self.grid.maze.start,
+                             self.grid.maze.end)
+        return self.grid.maze.solutions  # type: ignore
 
     def start_walk(self, start_tile, end_tile):
 
         paths = self.auto_solver(start_tile, end_tile)
-        start_tile.direction = self.direction.name
 
         for path in paths:
             old_tile = start_tile
-            old_direction = self.direction
-            tiles = [start_tile]
+            old_direction = self.curr_direction
+            path.append((end_tile.row, end_tile.col))
+
+            tiles: List[Tile] = []
             for location in path:
                 x, y = location
                 new_tile = Tile(int(x), int(y))
                 delta = old_tile - new_tile
                 new_direction = DirectionEnum((delta.row, delta.col))
-                new_tile.direction = new_direction.name
+                self.curr_direction = new_direction
 
                 if old_direction == new_direction:
                     new_tile.code_block = CodeBlock.MOVE_FORWARD.value
                 elif [old_direction, new_direction] in TURN_AROUND:
-                    new_tile.code_block = '#'.join(
-                        [CodeBlock.TURN_LEFT.value, CodeBlock.TURN_LEFT.value, CodeBlock.MOVE_FORWARD.value])
+                    new_tile.code_block = '#'.join([
+                        CodeBlock.TURN_LEFT.value, CodeBlock.TURN_LEFT.value,
+                        CodeBlock.MOVE_FORWARD.value
+                    ])
                 elif [old_direction, new_direction] in TURN_LEFT:
-                    new_tile.code_block = '#'.join(
-                        [CodeBlock.TURN_LEFT.value, CodeBlock.MOVE_FORWARD.value])
+                    new_tile.code_block = '#'.join([
+                        CodeBlock.TURN_LEFT.value, CodeBlock.MOVE_FORWARD.value
+                    ])
                 elif [old_direction, new_direction] in TURN_RIGHT:
-                    new_tile.code_block = '#'.join(
-                        [CodeBlock.TURN_RIGHT.value, CodeBlock.MOVE_FORWARD.value])
+                    new_tile.code_block = '#'.join([
+                        CodeBlock.TURN_RIGHT.value, CodeBlock.MOVE_FORWARD.value
+                    ])
 
                 old_tile = new_tile
                 old_direction = new_direction
                 tiles.append(new_tile)
-            tiles.append(end_tile)
             self.path.append(tiles)
-        
-            print('done walking!')
+
+            logging.info('done walking!')
             return tiles

@@ -1,0 +1,126 @@
+{
+  "id": 1,
+  "map_size": 5,
+  "num_agents": 3,
+  "grid": [{ "size": 5 }, { "size": 5 }, { "size": 5 }],
+  "agents": [
+    {
+      "id": 1,
+      "grid": { "size": 5 },
+      "path": [
+        [
+          { "row": 5, "col": 6, "value": 0, "code_block": "empty" },
+          { "row": 5, "col": 5, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 4,
+            "col": 5,
+            "value": 0,
+            "code_block": "turn_right#move_forward"
+          },
+          { "row": 3, "col": 5, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 3,
+            "col": 4,
+            "value": 0,
+            "code_block": "turn_left#move_forward"
+          },
+          { "row": 3, "col": 3, "value": 0, "code_block": "move_forward" },
+          { "row": 3, "col": 2, "value": 0, "code_block": "move_forward" },
+          { "row": 3, "col": 1, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 4,
+            "col": 1,
+            "value": 0,
+            "code_block": "turn_left#move_forward"
+          },
+          { "row": 5, "col": 1, "value": 0, "code_block": "move_forward" }
+        ]
+      ]
+    },
+    {
+      "id": 2,
+      "grid": { "size": 5 },
+      "path": [
+        [
+          { "row": 1, "col": 4, "value": 0, "code_block": "empty" },
+          { "row": 1, "col": 3, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 2,
+            "col": 3,
+            "value": 0,
+            "code_block": "turn_left#move_forward"
+          },
+          { "row": 3, "col": 3, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 3,
+            "col": 2,
+            "value": 0,
+            "code_block": "turn_right#move_forward"
+          },
+          { "row": 3, "col": 1, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 4,
+            "col": 1,
+            "value": 0,
+            "code_block": "turn_left#move_forward"
+          },
+          { "row": 5, "col": 1, "value": 0, "code_block": "move_forward" }
+        ]
+      ]
+    },
+    {
+      "id": 3,
+      "grid": { "size": 5 },
+      "path": [
+        [
+          { "row": 9, "col": 6, "value": 0, "code_block": "empty" },
+          { "row": 9, "col": 5, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 8,
+            "col": 5,
+            "value": 0,
+            "code_block": "turn_right#move_forward"
+          },
+          { "row": 7, "col": 5, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 7,
+            "col": 6,
+            "value": 0,
+            "code_block": "turn_right#move_forward"
+          },
+          { "row": 7, "col": 7, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 6,
+            "col": 7,
+            "value": 0,
+            "code_block": "turn_left#move_forward"
+          },
+          { "row": 5, "col": 7, "value": 0, "code_block": "move_forward" },
+          { "row": 4, "col": 7, "value": 0, "code_block": "move_forward" },
+          { "row": 3, "col": 7, "value": 0, "code_block": "move_forward" },
+          { "row": 2, "col": 7, "value": 0, "code_block": "move_forward" },
+          { "row": 1, "col": 7, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 1,
+            "col": 8,
+            "value": 0,
+            "code_block": "turn_right#move_forward"
+          },
+          { "row": 1, "col": 9, "value": 0, "code_block": "move_forward" },
+          {
+            "row": 2,
+            "col": 9,
+            "value": 0,
+            "code_block": "turn_right#move_forward"
+          },
+          { "row": 3, "col": 9, "value": 0, "code_block": "move_forward" },
+          { "row": 4, "col": 9, "value": 0, "code_block": "move_forward" },
+          { "row": 5, "col": 9, "value": 0, "code_block": "move_forward" },
+          { "row": 6, "col": 9, "value": 0, "code_block": "move_forward" },
+          { "row": 7, "col": 9, "value": 0, "code_block": "move_forward" }
+        ]
+      ]
+    }
+  ],
+  "score": 0
+}
