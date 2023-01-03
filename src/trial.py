@@ -30,9 +30,10 @@ class Trial:
     num_agents: int = field(default=3)
     score: int = field(default=0)
     __grid: list[LevelMap] = field(default_factory=list, repr=False)
-    __agents: List[Agent] = field(default_factory=list, repr=False)
+    agents: List[Agent] = field(default_factory=list, repr=False)
 
     def generate_map(self, mutation=False, **kwargs):
+        """Generate a map for the trial"""
 
         if not mutation:
             level = LevelMap(self.map_size)
@@ -40,8 +41,8 @@ class Trial:
             self.__grid.append(level)
             for id in range(1, self.num_agents + 1):
                 logging.info(f'creating agent {id}')
-                self.__agents.append(
-                    Agent(id, level, choice(list(DirectionEnum))))
+                self.agents.append(Agent(id, level,
+                                         choice(list(DirectionEnum))))
         else:
             for id in range(1, self.num_agents + 1):
                 level = LevelMap(self.map_size)
@@ -65,8 +66,8 @@ class Trial:
 
                 level.generate_map(**method)
                 self.__grid.append(level)
-                self.__agents.append(
-                    Agent(id, level, choice(list(DirectionEnum))))
+                self.agents.append(Agent(id, level,
+                                         choice(list(DirectionEnum))))
 
     def _gen_rand_location(self, locations, r_min, r_max, c_min, c_max):
         _r, _c = choice([(r, c)
@@ -95,6 +96,7 @@ class Trial:
         return end_tile
 
     def start_agent_walk(self, id=None, random_start=False):
+        """Start the agent walk"""
 
         grid = self.__grid[0].maze.grid
         r, c = grid.shape
@@ -113,12 +115,12 @@ class Trial:
         logging.info(f'end location {end_tile}')
 
         if id is not None:
-            for agent in self.__agents:
+            for agent in self.agents:
                 if id == agent.id:
                     agent.start_walk(start_tile, end_tile)
                     break
         else:
-            for agent in self.__agents:
+            for agent in self.agents:
                 if random_start:
                     start_tile = self._get_end_location(locations, r, c)
                 end_tile = self._get_end_location(locations, r, c)
@@ -135,8 +137,8 @@ class Trial:
         level.generate_map(custom_map)
 
         for id in range(1, self.num_agents + 1):
-            self.__agents.append(Agent(id, level, choice(list(DirectionEnum))))
-        for agent in self.__agents:
+            self.agents.append(Agent(id, level, choice(list(DirectionEnum))))
+        for agent in self.agents:
             agent.start_walk()
 
         self.__grid = level
@@ -154,13 +156,13 @@ class Trial:
                                      sharey=False,
                                      squeeze=True)
             for agent_id, ax in enumerate(axes.flatten()):
-                ax.imshow(self.__agents[agent_id].grid.maze.grid,
+                ax.imshow(self.agents[agent_id].grid.maze.grid,
                           cmap=plt.cm.binary,
                           interpolation='nearest')
                 colors = [
                     'maroon', 'royalblue', 'darkgray', 'coral', 'steelblue'
                 ]
-                for path in self.__agents[agent_id].path:
+                for path in self.agents[agent_id].path:
                     entrance_colors = ['dimgray', 'darkgray']
                     for i, tile in enumerate(path):
                         if i == 0 or i == len(path) - 1:
@@ -179,12 +181,12 @@ class Trial:
                                    sharex=False,
                                    sharey=False,
                                    squeeze=True)
-            ax.imshow(self.__agents[agent_id].grid.maze.grid,
+            ax.imshow(self.agents[agent_id].grid.maze.grid,
                       cmap=plt.cm.binary,
                       interpolation='nearest')
             colors = ['maroon', 'royalblue', 'darkgray', 'coral', 'steelblue']
 
-            for idx, agent in enumerate(self.__agents):
+            for idx, agent in enumerate(self.agents):
                 for path in agent.path:
                     entrance_colors = ['dimgray', 'darkgray']
                     for i, tile in enumerate(path):

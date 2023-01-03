@@ -9,21 +9,21 @@ from direction import DirectionEnum
 from level import LevelMap, Tile, showLevelPNGMark
 import logging
 
-# actions
+# define possible ways to turn left for the agent
 TURN_LEFT = [
     [DirectionEnum.SOUTH, DirectionEnum.EAST],
     [DirectionEnum.NORTH, DirectionEnum.WEST],
     [DirectionEnum.EAST, DirectionEnum.NORTH],
     [DirectionEnum.WEST, DirectionEnum.SOUTH],
 ]
-
+# define possible ways to turn right for the agent
 TURN_RIGHT = [
     [DirectionEnum.SOUTH, DirectionEnum.WEST],
     [DirectionEnum.NORTH, DirectionEnum.EAST],
     [DirectionEnum.EAST, DirectionEnum.SOUTH],
     [DirectionEnum.WEST, DirectionEnum.NORTH],
 ]
-
+# define possible ways to turn around (180 degrees) for the agent
 TURN_AROUND = [
     [DirectionEnum.SOUTH, DirectionEnum.NORTH],
     [DirectionEnum.EAST, DirectionEnum.WEST],
@@ -35,7 +35,7 @@ TURN_AROUND = [
 @dataclass_json
 @dataclass
 class Agent:
-    """A computer agent who can walk on the map using different strategy"""
+    """A computer agent who can walk on the map using different strategy to solve the maze."""
     id: int
     grid: LevelMap
     curr_direction: DirectionEnum
@@ -45,6 +45,7 @@ class Agent:
 
     def auto_solver(self, start_location, end_location,
                     solver=Chain()) -> list[list]:
+        """Automatically solve the maze using the given solver."""
 
         self.grid.maze.start = (start_location.row, start_location.col)
         self.grid.maze.end = (end_location.row, end_location.col)
@@ -61,6 +62,7 @@ class Agent:
         return self.grid.maze.solutions  # type: ignore
 
     def start_walk(self, start_tile, end_tile):
+        """Start walking on the map."""
 
         paths = self.auto_solver(start_tile, end_tile)
 

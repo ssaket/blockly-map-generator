@@ -14,6 +14,7 @@ from blocks import CodeBlock
 @dataclass_json
 @dataclass
 class Point:
+    """A point on the map."""
     row: int
     col: int
 
@@ -30,6 +31,7 @@ class Point:
 @dataclass_json
 @dataclass
 class Tile(Point):
+    """A tile on the map."""
     value: int = 0
     code_block: str = CodeBlock.EMPTY.value
 
@@ -43,10 +45,12 @@ class Tile(Point):
 @dataclass_json
 @dataclass
 class LevelMap:
+    """A map of the maze."""
     size: int
-    grid: List[Tile] = field(default_factory=list,
-                             repr=False,
-                             metadata=config(exclude=lambda x: True))  # type: ignore
+    grid: List[Tile] = field(
+        default_factory=list,
+        repr=False,
+        metadata=config(exclude=lambda x: True))  # type: ignore
     maze: Maze = field(init=False,
                        repr=False,
                        metadata=config(exclude=lambda x: True))  # type: ignore
@@ -56,6 +60,7 @@ class LevelMap:
                      custom_map=None,
                      seed=121,
                      **kwargs):
+        """Generate a map of the maze."""
 
         self.maze = Maze()
         assert method in ['cellular', 'eller'
@@ -65,10 +70,13 @@ class LevelMap:
             self.maze.grid = custom_map
         else:
             if method == 'cellular':
-                self.maze.generator = CellularAutomaton(self.size, self.size,  # type: ignore
-                                                        **kwargs)
+                self.maze.generator = CellularAutomaton(
+                    self.size,
+                    self.size,  # type: ignore
+                    **kwargs)
             else:
-                self.maze.generator = Ellers(self.size, self.size, **kwargs)  # type: ignore
+                self.maze.generator = Ellers(self.size, self.size,
+                                             **kwargs)  # type: ignore
             self.maze.generate()
         grid = self.maze.grid
         H, W = grid.shape

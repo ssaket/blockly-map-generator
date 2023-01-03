@@ -5,8 +5,7 @@ import logging
 
 def main():
     filename = 'blockly-map-generator.log'
-    logging.basicConfig(filename=filename,
-                        level=logging.INFO)
+    logging.basicConfig(filename=filename, level=logging.INFO)
 
     logging.info(f'Started logging to {filename}')
 
@@ -17,7 +16,7 @@ def main():
     trial.start_agent_walk(random_start=True)
     trial.show_map_with_agents()
 
-    showLevelWithAgentPNG(trial.__grid[0].maze.grid, trial.__agents[0].path)
+    showLevelWithAgentPNG(trial.__grid[0].maze.grid, trial.agents[0].path)
     print(trial.to_json())
 
 
