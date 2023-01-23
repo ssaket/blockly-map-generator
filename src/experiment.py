@@ -1,5 +1,5 @@
-from level import showLevelWithAgentPNG
 from trial import Trial
+from utils import showLevelWithAgentPNG
 import logging
 
 
@@ -9,14 +9,13 @@ def main():
 
     logging.info(f'Started logging to {filename}')
 
-    trial = Trial(map_size=8, num_agents=4)
+    trial = Trial(id=21)
+    showLevelWithAgentPNG(trial.maze, trial.agent.path)
     # trial.generate_map(method='eller', xskew = 0.1, yskew= 0.9)
     # trial.generate_map(method='cellular', complexity=0.2, density=0.2)
-    trial.generate_map(mutation=True)
-    trial.start_agent_walk(random_start=True)
-    trial.show_map_with_agents()
-
-    showLevelWithAgentPNG(trial.__grid[0].maze.grid, trial.agents[0].path)
+    # trial.generate_map(mutation=True)
+    # trial.start_agent_walk(random_start=True)
+    # trial.show_map_with_agents()
     print(trial.to_json())
 
 

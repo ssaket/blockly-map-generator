@@ -3,102 +3,57 @@ from typing import List
 
 from dataclasses_json import config, dataclass_json
 from mazelib.solve.Chain import Chain
-
-from blocks import CodeBlock
-from direction import DirectionEnum
-from level import LevelMap, Tile, showLevelPNGMark
-import logging
-
-# define possible ways to turn left for the agent
-TURN_LEFT = [
-    [DirectionEnum.SOUTH, DirectionEnum.EAST],
-    [DirectionEnum.NORTH, DirectionEnum.WEST],
-    [DirectionEnum.EAST, DirectionEnum.NORTH],
-    [DirectionEnum.WEST, DirectionEnum.SOUTH],
-]
-# define possible ways to turn right for the agent
-TURN_RIGHT = [
-    [DirectionEnum.SOUTH, DirectionEnum.WEST],
-    [DirectionEnum.NORTH, DirectionEnum.EAST],
-    [DirectionEnum.EAST, DirectionEnum.SOUTH],
-    [DirectionEnum.WEST, DirectionEnum.NORTH],
-]
-# define possible ways to turn around (180 degrees) for the agent
-TURN_AROUND = [
-    [DirectionEnum.SOUTH, DirectionEnum.NORTH],
-    [DirectionEnum.EAST, DirectionEnum.WEST],
-    [DirectionEnum.NORTH, DirectionEnum.SOUTH],
-    [DirectionEnum.WEST, DirectionEnum.EAST],
-]
+from mazelib import Maze
+from rewards import Rewards
+import random
+import numpy as np
 
 
 @dataclass_json
 @dataclass
 class Agent:
-    """A computer agent who can walk on the map using different strategy to solve the maze."""
-    id: int
-    grid: LevelMap
-    curr_direction: DirectionEnum
-    path: List[List[Tile]] = field(
+    """An agent that walks through a maze.
+    Args:
+        id (int): The agent id.
+        map (List[List[int]]): The maze map.
+
+    Methods:
+        start_walk(length, random_start): Start the agent walk.
+    """
+    agent_id: int
+    path: List[List[int]] = field(default_factory=list)
+    rewards: List[int] = field(default_factory=list)
+    map: List[List[int]] = field(
         default_factory=list,
-        metadata=config(exclude=lambda x: False))  # type: ignore
+        repr=False,
+        metadata=config(exclude=lambda x: True))  # type: ignore
 
-    def auto_solver(self, start_location, end_location,
-                    solver=Chain()) -> list[list]:
-        """Automatically solve the maze using the given solver."""
+    def __init__(self, id, map):
+        self.agent_id = id
+        self.map = map
 
-        self.grid.maze.start = (start_location.row, start_location.col)
-        self.grid.maze.end = (end_location.row, end_location.col)
-        self.grid.maze.solver = solver  # type: ignore
+    def start_walk(self, length, random_start=False):
+        """Start the agent walk."""
+        m = Maze()
+        m.grid = np.array(self.map)
 
-        try:
-            logging.info('start solving maze...')
-            self.grid.maze.solve()
-            logging.info('maze is solved!')
-        except:
-            print("can't solve the maze")
-            showLevelPNGMark(self.grid.maze.grid, self.grid.maze.start,
-                             self.grid.maze.end)
-        return self.grid.maze.solutions  # type: ignore
+        # m.start = (1, 0)
+        # m.end = (5, 5)
+        m.generate_entrances(start_outer=False, end_outer=True)
+        m.solver = Chain()
+        m.solve()
+        if length is not None:
+            self.path = m.solutions[0][:length]
+        else:
+            self.path = m.solutions[0]
 
-    def start_walk(self, start_tile, end_tile):
-        """Start walking on the map."""
+        random_choice = random.choice(list(Rewards))
+        self.rewards = random_choice.value[1](len(self.path))
 
-        paths = self.auto_solver(start_tile, end_tile)
 
-        for path in paths:
-            old_tile = start_tile
-            old_direction = self.curr_direction
-            path.append((end_tile.row, end_tile.col))
+if __name__ == "__main__":
+    a = Agent(1, [[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 1, 0],
+                  [0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 1, 0], [0, 1, 1, 1, 1, 0]])
+    a.start_walk()
 
-            tiles: List[Tile] = []
-            for location in path:
-                x, y = location
-                new_tile = Tile(int(x), int(y))
-                delta = old_tile - new_tile
-                new_direction = DirectionEnum((delta.row, delta.col))
-                self.curr_direction = new_direction
-
-                if old_direction == new_direction:
-                    new_tile.code_block = CodeBlock.MOVE_FORWARD.value
-                elif [old_direction, new_direction] in TURN_AROUND:
-                    new_tile.code_block = '#'.join([
-                        CodeBlock.TURN_LEFT.value, CodeBlock.TURN_LEFT.value,
-                        CodeBlock.MOVE_FORWARD.value
-                    ])
-                elif [old_direction, new_direction] in TURN_LEFT:
-                    new_tile.code_block = '#'.join([
-                        CodeBlock.TURN_LEFT.value, CodeBlock.MOVE_FORWARD.value
-                    ])
-                elif [old_direction, new_direction] in TURN_RIGHT:
-                    new_tile.code_block = '#'.join([
-                        CodeBlock.TURN_RIGHT.value, CodeBlock.MOVE_FORWARD.value
-                    ])
-
-                old_tile = new_tile
-                old_direction = new_direction
-                tiles.append(new_tile)
-            self.path.append(tiles)
-
-            logging.info('done walking!')
-            return tiles
+    print(a.to_json())
