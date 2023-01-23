@@ -1,9 +1,13 @@
 from datetime import datetime
+from typing import List
 from trial import Trial
 import logging
-import json
+from dataclasses import dataclass, field
+from dataclasses_json import dataclass_json
 
 
+@dataclass_json
+@dataclass
 class Experiment:
     """Generate a set of trials for the experiment.
     
@@ -14,8 +18,10 @@ class Experiment:
         to_json: Convert the experiment to json.
 
     """
+    trials: int = 10
+    trial_list: List[Trial] = field(default_factory=list)
 
-    def __init__(self, trials=10):
+    def __init__(self, trials=10) -> None:
         self.trials = trials
         self.trial_list = []
 
@@ -29,7 +35,15 @@ class Experiment:
             trial.show_map()
 
     def to_json(self):
-        return json.dumps([trial.to_json() for trial in self.trial_list])
+        return self.to_json()
+
+    def save_to_file(
+        self,
+        filename=f'blockly-map-generator-{datetime.now().strftime("%Y-%m-%d")}.json'
+    ):
+        data = self.to_json()
+        with open(filename, 'w') as f:
+            f.write(data)
 
 
 def main():
@@ -42,15 +56,11 @@ def main():
     experiment.generate_trials()
 
     data = experiment.to_json()
-    logging.info(data)
+    logging.info(f'Saving data to file')
 
     filename = f'blockly-map-generator-{datetime.now().strftime("%Y-%m-%d")}.json'
     print(filename)
-
-    # write data to file
-    with open(filename, 'w') as f:
-        f.write(data)
-    print(data)
+    experiment.save_to_file(filename)
 
 
 if __name__ == '__main__':
