@@ -23,13 +23,19 @@ class Trial:
         map_size: An integer specifying the grid size (int x int)
         num_agents: An integer to count total number of agents in a map
         score: An integer to indicate total score for the trial
+        agents: A list of Agent objects
+
+    Methods:
+        generate_map: Generate a map for the trial
+        start_agent_walk: Start the agent walk
+        show_map: Show the map
 
     """
     id: int = field(default=1)
     map_size: int = field(default=5)
     num_agents: int = field(default=3)
     score: int = field(default=0)
-    __grid: list[LevelMap] = field(default_factory=list, repr=False)
+    grid: list[LevelMap] = field(default_factory=list, repr=False)
     agents: List[Agent] = field(default_factory=list, repr=False)
 
     def generate_map(self, mutation=False, **kwargs):
@@ -38,7 +44,7 @@ class Trial:
         if not mutation:
             level = LevelMap(self.map_size)
             level.generate_map(**kwargs)
-            self.__grid.append(level)
+            self.grid.append(level)
             for id in range(1, self.num_agents + 1):
                 logging.info(f'creating agent {id}')
                 self.agents.append(Agent(id, level,
@@ -65,7 +71,7 @@ class Trial:
                 ])
 
                 level.generate_map(**method)
-                self.__grid.append(level)
+                self.grid.append(level)
                 self.agents.append(Agent(id, level,
                                          choice(list(DirectionEnum))))
 
@@ -98,7 +104,7 @@ class Trial:
     def start_agent_walk(self, id=None, random_start=False):
         """Start the agent walk"""
 
-        grid = self.__grid[0].maze.grid
+        grid = self.grid[0].maze.grid
         r, c = grid.shape
         locations = np.where(grid == 0)
         start_r, start_c = self._gen_rand_location(locations, r // 2 - 1,
@@ -141,7 +147,7 @@ class Trial:
         for agent in self.agents:
             agent.start_walk()
 
-        self.__grid = level
+        self.grid = level
 
     def show_map_with_agents(self):
         """Generate a simple image of the maze."""
