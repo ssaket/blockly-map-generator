@@ -20,7 +20,7 @@ class Experiment:
         self.trial_list = []
 
     def generate_trials(self):
-        for i in range(1, self.trials):
+        for i in range(1, self.trials + 1):
             trial = Trial(i)
             self.trial_list.append(trial)
 
@@ -34,7 +34,7 @@ def main():
 
     logging.info(f'Started logging to {filename}')
 
-    experiment = Experiment(10)
+    experiment = Experiment(20)
     experiment.generate_trials()
 
     data = experiment.to_json()
