@@ -6,11 +6,11 @@ This project is used to generate maps and agent paths for the blocky plugin. For
 
 Currently, the rewards are generated using the following rules:
 
-- Multiples of Intgers
-- Conditionals
+- Multiples of Integers (like 1, 2, 5)
+- Conditionals (if-else statements)
 - Random Sequence of letters
 
-See `reward.py` for more information.
+See `reward.py` for more information. **The user is expected to write code to get the rewards from the agent path.**
 
 ## How to use
 

@@ -1,6 +1,31 @@
+from datetime import datetime
 from trial import Trial
-from utils import showLevelWithAgentPNG
 import logging
+import json
+
+
+class Experiment:
+    """Generate a set of trials for the experiment.
+    
+    Args:
+        trials (int, optional): The number of trials. Defaults to 10.
+    Methods:
+        generate_trials: Generate a set of trials.
+        to_json: Convert the experiment to json.
+
+    """
+
+    def __init__(self, trials=10):
+        self.trials = trials
+        self.trial_list = []
+
+    def generate_trials(self):
+        for i in range(1, self.trials):
+            trial = Trial(i)
+            self.trial_list.append(trial)
+
+    def to_json(self):
+        return json.dumps([trial.to_json() for trial in self.trial_list])
 
 
 def main():
@@ -9,14 +34,19 @@ def main():
 
     logging.info(f'Started logging to {filename}')
 
-    trial = Trial(id=21)
-    showLevelWithAgentPNG(trial.maze, trial.agent.path)
-    # trial.generate_map(method='eller', xskew = 0.1, yskew= 0.9)
-    # trial.generate_map(method='cellular', complexity=0.2, density=0.2)
-    # trial.generate_map(mutation=True)
-    # trial.start_agent_walk(random_start=True)
-    # trial.show_map_with_agents()
-    print(trial.to_json())
+    experiment = Experiment(10)
+    experiment.generate_trials()
+
+    data = experiment.to_json()
+    logging.info(data)
+
+    filename = f'blockly-map-generator-{datetime.now().strftime("%Y-%m-%d")}.json'
+    print(filename)
+
+    # write data to file
+    with open(filename, 'w') as f:
+        f.write(data)
+    print(data)
 
 
 if __name__ == '__main__':
