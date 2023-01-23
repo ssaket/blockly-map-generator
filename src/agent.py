@@ -40,20 +40,13 @@ class Agent:
         # m.start = (1, 0)
         # m.end = (5, 5)
         m.generate_entrances(start_outer=False, end_outer=True)
-        m.solver = Chain()
+        m.solver = Chain()  # type: ignore
         m.solve()
         if length is not None:
-            self.path = m.solutions[0][:length]
+            self.path = m.solutions[0][:length]  # type: ignore
         else:
-            self.path = m.solutions[0]
+            self.path = m.solutions[0]  # type: ignore
 
         random_choice = random.choice(list(Rewards))
         self.rewards = random_choice.value[1](len(self.path))
 
-
-if __name__ == "__main__":
-    a = Agent(1, [[0, 0, 0, 0, 0, 0], [0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 1, 0],
-                  [0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 1, 0], [0, 1, 1, 1, 1, 0]])
-    a.start_walk()
-
-    print(a.to_json())

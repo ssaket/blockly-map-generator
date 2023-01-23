@@ -24,6 +24,10 @@ class Experiment:
             trial = Trial(i)
             self.trial_list.append(trial)
 
+    def show_trial_maps(self):
+        for trial in self.trial_list:
+            trial.show_map()
+
     def to_json(self):
         return json.dumps([trial.to_json() for trial in self.trial_list])
 
