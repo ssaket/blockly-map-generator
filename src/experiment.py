@@ -52,7 +52,7 @@ def main():
 
     logging.info(f'Started logging to {filename}')
 
-    experiment = Experiment(20)
+    experiment = Experiment(25)
     experiment.generate_trials()
 
     data = experiment.to_json()

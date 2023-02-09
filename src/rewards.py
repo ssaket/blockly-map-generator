@@ -94,9 +94,9 @@ class Rewards(Enum):
     TABLE_1 = (1, table_1)
     TABLE_2 = (2, table_2)
     TABLE_5 = (3, table_5)
-    CONDITIONS_1 = (4, conditions_1)
-    CONDITIONS_2 = (4, conditions_2)
-    RANDOM_LETTER_SEQUENCE = (5, random_letter_sequence)
+    # CONDITIONS_1 = (4, conditions_1)
+    # CONDITIONS_2 = (4, conditions_2)
+    # RANDOM_LETTER_SEQUENCE = (5, random_letter_sequence)
 
 
 if __name__ == "__main__":
