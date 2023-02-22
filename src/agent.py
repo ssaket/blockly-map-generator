@@ -29,6 +29,7 @@ class Agent:
         metadata=config(exclude=lambda x: True))  # type: ignore
 
     def __init__(self, id, map):
+        """Initialize the agent."""
         self.agent_id = id
         self.map = map
 
@@ -39,14 +40,15 @@ class Agent:
 
         # m.start = (1, 0)
         # m.end = (5, 5)
-        m.generate_entrances(start_outer=False, end_outer=True)
+        m.generate_entrances(start_outer=True, end_outer=True)
         m.solver = Chain()  # type: ignore
         m.solve()
         if length is not None:
+            print( m.solutions)
             self.path = m.solutions[0][:length]  # type: ignore
+            # print(f'length: {len(m.solutions[0]}')
         else:
             self.path = m.solutions[0]  # type: ignore
 
         random_choice = random.choice(list(Rewards))
         self.rewards = random_choice.value[1](len(self.path))
-
